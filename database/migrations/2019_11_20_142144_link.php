@@ -13,10 +13,10 @@ class Link extends Migration
      */
     public function up()
     {
-        Schema::create('link', function (Blueprint $table) {
+        Schema::create('short_links', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('link_asli');
-            $table->string('link_pendek');      
+            $table->string('link');
+            $table->string('code');      
             $table->timestamps();
         });
     }

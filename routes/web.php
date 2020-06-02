@@ -19,8 +19,9 @@
 //     return view('notfound');
 // });
 
-Route::get('/', 'LinkController@home');
-Route::get('/notfound', 'LinkController@notFound');
+Route::get('/', 'ShortLinkController@home');
+Route::get('/notfound', 'ShortLinkController@notFound');
 
-Route::post('/generateLink', 'LinkController@generateLink');
-Route::get('/{link_pendek}', 'LinkController@accessLink');
+Route::post('/generateLink', 'ShortLinkController@store')->name('generate.shorten.link.post');
+//Route::get('/{link_pendek}', 'LinkController@accessLink');
+Route::get('/{code}', 'ShortLinkController@shortenLink')->name('shorten.link');

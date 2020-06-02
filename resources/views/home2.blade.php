@@ -1,4 +1,3 @@
-
 @extends('layout')
 
 @section('body')
@@ -18,14 +17,15 @@
                     <div class="row d-flex justify-content-center">
                         <div class="col-md-10">
                             <div id="action">
-                                @foreach($shortLinks as $row)
-                                <div align="center">
-                                    <p style="color:white;"><a href="{{ route('shorten.link', $row->code) }}" target="_blank">{{ route('shorten.link', $row->code) }}</a></p>
-                                    <a href="{{url($row->code)}}" class="btn btn-primary" style="background-color:#ffc413; color:white;">Menuju Link</a>
-                                    
-                                    <a href="{{url('/')}}" class="btn btn-primary" style="background-color:#ffc413; color:white;">Generate Ulang</a>
-                                </div>
-                                @endforeach
+                                <form method="POST" action="{{route('generate.shorten.link.post')}}">
+                                @csrf
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <input type="text" placeholder="Original Link" name="link" class="btn-group1">
+                                        <input type="text" placeholder="Custom Link" name="code" class="btn-group2">
+                                        <button id="button_form_action" style="background-color:#ffc413;" class="btn-form">Generate Link<i class="pe-7s-angle-right"></i></button>
+                                    </div>
+                                </form>
+                                
                             </div>
                         </div>
                     </div>
@@ -35,3 +35,4 @@
     </div> 
 </section>    
 @endsection
+
