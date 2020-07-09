@@ -1,8 +1,0 @@
-node{
- stage('Checkout'){
-        checkout([$class: 'GitSCM', branches: [[name: '*/jenkinsfile']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/hilmiraditya/ITS-UrlShortener']]])
-    }
- stage('Update latest change'){
-	sh 'git pull'
-    }
-}
