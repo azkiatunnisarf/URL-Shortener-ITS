@@ -9,7 +9,11 @@
                     <div class="row"> 
                         <div class="col-md-12"> 
                             <div class="slider-content_wrap"> 
+<<<<<<< HEAD
                                 <h1 style="color:white;">ITS-Okay-To-Not-Be-OKAY-Shortener</h1> 
+=======
+                                <h1 style="color:white;">ITS-Link-Shortener</h1> 
+>>>>>>> b6b50d1787729adf874f87a20f61791a51293f29
                                 <h5 style="color:white;">Link Shortener by DPTSI ITS</h5>
                             </div> 
                         </div> 
