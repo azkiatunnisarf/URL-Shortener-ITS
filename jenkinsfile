@@ -1,110 +1,23 @@
+def checkoutApp(String githubRepository, String credentialsId, String githubBranch){
+    checkout([
+    $class: 'GitSCM',
+    branches: [[name: githubBranch]],
+    doGenerateSubmoduleConfigurations:
+    false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[ credentialsId: credentialsId, url: githubRepository ]] ]) }
+
 node{
- stage('Checkout'){
-        checkout([$class: 'GitSCM', branches: [[name: '*/jenkinsfile']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/hilmiraditya/ITS-UrlShortener']]])
+
+def githubRepository = 'https://github.com/azkiatunnisarf/URL-Shortener-ITS.git' 
+def githubCredentialsId = '50b22dca-b5c6-466d-a12f-d02d19f75bb4' 
+def githubBranch = '*/master' 
+    stage('Checkout'){ 
+        checkoutApp( githubRepository as String, 
+        githubCredentialsId as String, githubBranch as String )
     }
- stage('Update latest change'){
-	sh 'git pull'
+    stage ('Update latest change'){
+        sh '''
+        cd /var/www/URL-Shortener-ITS
+        sudo git pull
+        '''
     }
-}
-###
-def getBuildNumber(Integer build_number,String applicationName){
-
-    def searchBuildNumber = null
-
-try {
-
-sh "helm list | grep '$applicationName-
-
-build$build_number'"
-
-return build_number
-
-} catch (Exception e) {
-
-getBuildNumber(build_number-
-
-1,applicationName)
-
-}
-
-}
-
-def checkoutApp(String githubRepository, String
-
-credentialsId, String githubBranch){
-
-checkout([
-
-$class: 'GitSCM',
-
-branches: [[name: githubBranch]],
-
-doGenerateSubmoduleConfigurations:
-
-false,
-
-extensions: [],
-
-submoduleCfg: [], userRemoteConfigs: [[ credentialsId: credentialsId, url: githubRepository ]] ]) } 
-
-def buildImagePush(String dockerRegistryUrl, String credentialsId, String dockerImage){ 
-    def appImg script { 
-        docker.withRegistry(dockerRegistryUrl,credentialsId){ 
-            appImg = docker.build(dockerImage,'.') appImg.push() 
-            } 
-            } 
-            } 
-            def helmAddRepo(String chartMuseumUrl){ sh "helm repo add chartmuseum $chartMuseumUrl" sh "helm repo update" } 
-            def deployApp(String credentialsId,String serverUrl,Integer latestBuildNumber,Integer initialDelaySeconds, String applicationName, String chartMuseumUrl){ 
-                withKubeConfig( credentialsId: credentialsId, serverUrl: serverUrl){ helmAddRepo(chartMuseumUrl) 
-                sh "helm install --set application.buildNumber=build$latestBuildNumber --set application.initialDelaySeconds=$initialDelaySeconds $applicationName-build$latestBuildNumber chartmuseum/app" try{ sh "helm install --set application.buildNumber=build$latestBuildNumber --set application.initialDelaySeconds=$initialDelaySeconds $applicationName-configuration chartmuseum/app-configuration" sh "helm install $applicationName-phpmyadmin-mysql chartmuseum/phpmyadmin-mysql" return null }catch(Exception e){ sh "helm install $applicationName-curl-test chartmuseum/curl-test" buildNumberBefore = getBuildNumber(latestBuildNumber-1,applicationName) return buildNumberBefore } } } node{ def applicationUrl = 'http://10.199.16.58:31380/' def initialDelaySeconds = '60' def applicationName = 'its-shorterner-url' def appPodLogs,buildNumberBefore def latestBuildNumber = "${BUILD_NUMBER}" def kubernetesCredentialsId = '1f5d0fb9-0918-4cfb-8246-fe08bf683df3' def kubernetesServerUrl =
-
-'https://k8s.its.ac.id:20443/k8s/clusters/c-dwlkj' def chartMuseumUrl = 'http://10.199.16.58:30661' def dockerImage = 'hilmiraditya/tugas-akhir:latest' def dockerRegistryUrl = 'https://registry.hub.docker.com' def dockerRegistryCredentialsId = '197410bc-3f13-42c0-86bf-ec91dbb833f0' def githubRepository = 'https://github.com/hilmiraditya/ta-deploy-2.git' def githubCredentialsId = '197410bc-3f13-42c0-86bf-ec91dbb833f0' def githubBranch = '*/deploy' stage('Checkout'){ checkoutApp( githubRepository as String, githubCredentialsId as String, githubBranch as String ) } stage('Build'){ buildImagePush( dockerRegistryUrl as String, dockerRegistryCredentialsId as String, dockerImage as String ) } stage('Deployment') { buildNumberBefore = deployApp( kubernetesCredentialsId as String, kubernetesServerUrl as String,
-
-latestBuildNumber as Integer, initialDelaySeconds as Integer, applicationName as String, chartMuseumUrl as String ) } stage('Waiting for Deployed Application to be ready'){ //konfigurasi Istio } stage('Deploy Virtual Service (Istio Configuration)'){ //konfigurasi Istio } stage('cleanup') { dir(".") { sh 'docker image prune --all' } } }
-
-def deployApp(
-    String credentialsId,String serverUrl,Integer latestBuildNumber,Integer initialDelaySeconds, 
-    String applicationName, String chartMuseumUrl){ 
-        withKubeConfig(credentialsId: credentialsId, serverUrl: serverUrl)
-        { 
-            helmAddRepo(chartMuseumUrl) 
-            sh "helm install --set application.buildNumber=build$latestBuildNumber --set 
-            application.initialDelaySeconds=$initialDelaySeconds $applicationName-build$latestBuildNumber chartmuseum/app" 
-            try{ 
-                sh "helm install --set application.buildNumber=build$latestBuildNumber --set 
-                application.initialDelaySeconds=$initialDelaySeconds $applicationName-configuration chartmuseum/app-configuration" 
-                sh "helm install $applicationName-phpmyadmin-mysql chartmuseum/phpmyadmin-mysql" 
-                return null 
-            }
-            catch(Exception e){ 
-                sh "helm install $applicationName-curl-test chartmuseum/curl-test" 
-                buildNumberBefore = getBuildNumber(latestBuildNumber-1,applicationName) 
-                return buildNumberBefore 
-            }
-        } 
-}
-def applicationUrl = 'http://10.199.16.58:31380/' 
-def initialDelaySeconds = '60' 
-def applicationName = 'its-shorterner-url' 
-def appPodLogs,buildNumberBefore 
-def latestBuildNumber = "${BUILD_NUMBER}" 
-def kubernetesCredentialsId = '1f5d0fb9-0918-4cfb-8246-fe08bf683df3' 
-def kubernetesServerUrl = 'https://k8s.its.ac.id:20443/k8s/clusters/c-dwlkj' 
-def chartMuseumUrl = 'http://10.199.16.58:30661' 
-def dockerImage = 'hilmiraditya/tugas-akhir:latest' 
-def dockerRegistryUrl = 'https://registry.hub.docker.com' 
-def dockerRegistryCredentialsId = '197410bc-3f13-42c0-86bf-ec91dbb833f0' 
-def githubRepository = 'https://github.com/hilmiraditya/ta-deploy-2.git' 
-def githubCredentialsId = '197410bc-3f13-42c0-86bf-ec91dbb833f0' 
-def githubBranch = '*/deploy'
-
-stage('Deployment') { 
-    buildNumberBefore = deployApp( 
-        kubernetesCredentialsId as String, 
-        kubernetesServerUrl as String, 
-        latestBuildNumber as Integer, 
-        initialDelaySeconds as Integer, 
-        applicationName as String, 
-        chartMuseumUrl as String ) 
 }
